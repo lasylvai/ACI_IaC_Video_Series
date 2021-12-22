@@ -1,0 +1,7 @@
+---
+
+
+# vCenter credentials
+vcenter_ip: *Your URL*
+vcenter_username: *Your Username*
+vcenter_password: *Your Password*

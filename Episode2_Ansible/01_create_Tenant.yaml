@@ -1,0 +1,217 @@
+---
+
+- name: Build basic ACI tenant
+  hosts: apic
+  connection: "{{ ansible_connection }}"
+  gather_facts: no
+
+  vars_prompt:
+  - name: "user_tenant"
+    prompt: "Tenant name"
+    default: "Tenant_Ansible"
+    private: no
+  - name: "user_vrf"
+    prompt: "VRF"
+    default: "Production"
+    private: no
+  - name: "user_policy_control_preference"
+    prompt: "Policy Control Preference mode"
+    default: "unenforced"
+    private: no
+  - name: "user_env"
+    prompt: "Environment"
+    default: "Production"
+    private: no
+  - name: "user_segment_1"
+    prompt: "Segment Id"
+    default: "230"
+    private: no
+  - name: "user_bd_subnet_1"
+    prompt: "IP Default Gateway"
+    default: "10.230.0.254"
+    private: no
+  - name: "user_bd_mask_1"
+    prompt: "IP Default Gateway mask"
+    default: "24"
+    private: no
+  - name: "user_segment_2"
+    prompt: "Segment Id"
+    default: "231"
+    private: no
+  - name: "user_bd_subnet_2"
+    prompt: "IP Default Gateway"
+    default: "10.231.0.254"
+    private: no
+  - name: "user_bd_mask_2"
+    prompt: "IP Default Gateway mask"
+    default: "24"
+    private: no
+
+  tasks:
+  - name: Create Tenant
+    aci_tenant:
+      hostname: "{{ inventory_hostname }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      validate_certs: "{{ validate_certs }}"
+      use_proxy: "{{ use_proxy }}"
+      use_ssl: "{{ use_ssl }}"
+      tenant: "{{ user_tenant }}"
+      state: present
+
+  - name: Create VRF
+    aci_vrf:
+      hostname: "{{ inventory_hostname }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      validate_certs: "{{ validate_certs }}"
+      use_proxy: "{{ use_proxy }}"
+      use_ssl: "{{ use_ssl }}"
+      tenant: "{{ user_tenant }}"
+      vrf: "{{ user_vrf }}"
+      policy_control_preference: "{{ user_policy_control_preference }}"
+      state: present
+
+  - name: Create BD1
+    aci_bd:
+      hostname: "{{ inventory_hostname }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      validate_certs: "{{ validate_certs }}"
+      use_proxy: "{{ use_proxy }}"
+      use_ssl: "{{ use_ssl }}"
+      tenant: "{{ user_tenant }}"
+      vrf: "{{ user_vrf }}"
+      bd: "Production-Segment-{{ user_segment_1 }}"
+      enable_routing: True
+      arp_flooding: True
+      l2_unknown_unicast: proxy
+      ip_learning: True
+      state: present
+
+  - name: Create BD Subnet1
+    aci_bd_subnet:
+      hostname: "{{ inventory_hostname }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      validate_certs: "{{ validate_certs }}"
+      use_proxy: "{{ use_proxy }}"
+      use_ssl: "{{ use_ssl }}"
+      tenant: "{{ user_tenant }}"
+      bd: "Production-Segment-{{ user_segment_1 }}"
+      gateway: "{{ user_bd_subnet_1 }}"
+      mask: "{{ user_bd_mask_1 }}"
+      scope: private
+      state: present
+
+  - name: Create BD2
+    aci_bd:
+      hostname: "{{ inventory_hostname }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      validate_certs: "{{ validate_certs }}"
+      use_proxy: "{{ use_proxy }}"
+      use_ssl: "{{ use_ssl }}"
+      tenant: "{{ user_tenant }}"
+      vrf: "{{ user_vrf }}"
+      bd: "Production-Segment-{{ user_segment_2 }}"
+      enable_routing: True
+      arp_flooding: True
+      l2_unknown_unicast: proxy
+      ip_learning: True
+      state: present
+
+  - name: Create BD Subnet2
+    aci_bd_subnet:
+      hostname: "{{ inventory_hostname }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      validate_certs: "{{ validate_certs }}"
+      use_proxy: "{{ use_proxy }}"
+      use_ssl: "{{ use_ssl }}"
+      tenant: "{{ user_tenant }}"
+      bd: "Production-Segment-{{ user_segment_2 }}"
+      gateway: "{{ user_bd_subnet_2 }}"
+      mask: "{{ user_bd_mask_2 }}"
+      scope: private
+      state: present
+
+  - name: Create ANP
+    aci_ap:
+      hostname: "{{ inventory_hostname }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      validate_certs: "{{ validate_certs }}"
+      use_proxy: "{{ use_proxy }}"
+      use_ssl: "{{ use_ssl }}"
+      tenant: "{{ user_tenant }}"
+      ap: "{{ user_env }}"
+      state: present
+
+  - name: Create EPG1
+    aci_epg:
+      hostname: "{{ inventory_hostname }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      validate_certs: "{{ validate_certs }}"
+      use_proxy: "{{ use_proxy }}"
+      use_ssl: "{{ use_ssl }}"
+      tenant: "{{ user_tenant }}"
+      ap: "{{ user_env }}"
+      bd: "Production-Segment-{{ user_segment_1 }}"
+      epg: "Segment-{{ user_segment_1 }}"
+      intra_epg_isolation: unenforced
+      priority: unspecified
+      state: present
+
+  - name: Associate EPG to VMM Domain 1
+    aci_epg_to_domain:
+      hostname: "{{ inventory_hostname }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      validate_certs: "{{ validate_certs }}"
+      use_proxy: "{{ use_proxy }}"
+      use_ssl: "{{ use_ssl }}"
+      tenant: "{{ user_tenant }}"
+      ap: "{{ user_env }}"
+      epg: "Segment-{{ user_segment_1 }}"
+      domain_type: vmm
+      vm_provider: vmware
+      domain: DVS_Domain
+      deploy_immediacy: immediate
+      resolution_immediacy: immediate
+      state: present
+
+  - name: Create EPG2
+    aci_epg:
+      hostname: "{{ inventory_hostname }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      validate_certs: "{{ validate_certs }}"
+      use_proxy: "{{ use_proxy }}"
+      use_ssl: "{{ use_ssl }}"
+      tenant: "{{ user_tenant }}"
+      ap: "{{ user_env }}"
+      bd: "Production-Segment-{{ user_segment_2 }}"
+      epg: "Segment-{{ user_segment_2 }}"
+      intra_epg_isolation: unenforced
+      priority: unspecified
+      state: present
+
+  - name: Associate EPG to VMM Domain 2
+    aci_epg_to_domain:
+      hostname: "{{ inventory_hostname }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      validate_certs: "{{ validate_certs }}"
+      use_proxy: "{{ use_proxy }}"
+      use_ssl: "{{ use_ssl }}"
+      tenant: "{{ user_tenant }}"
+      ap: "{{ user_env }}"
+      epg: "Segment-{{ user_segment_2 }}"
+      domain_type: vmm
+      vm_provider: vmware
+      domain: DVS_Domain
+      deploy_immediacy: immediate
+      resolution_immediacy: immediate
+      state: present

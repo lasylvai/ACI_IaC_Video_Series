@@ -1,0 +1,15 @@
+[apic]
+*Your IP*
+
+##############################
+#### connection variables ####
+##############################
+
+[apic:vars]
+
+ansible_connection=local
+username=*Your Username*
+password=*Your Password*
+validate_certs=no
+use_proxy=no
+use_ssl=no

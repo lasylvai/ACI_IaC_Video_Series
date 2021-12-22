@@ -1,0 +1,39 @@
+---
+
+#########################################################
+#### configuration variables for Application Centric ####
+#########################################################
+
+state: present
+
+epg_1: Segment-230
+
+epg_2: Segment-231
+
+contract: Ping
+
+contract_scope: tenant
+
+reverse_filter: True
+
+subject: Allowed_Traffic
+
+filter_1: Ping_Filter
+
+filter_1_entry: Ping_Entry
+
+ether_type: ip
+# options: arp/fcoe/ip/mac_security/mpls_ucast/unspecified
+
+filter_1_dst_port: unspecified
+
+filter_1_ip_protocol: icmp
+# options: eigrp/egp/icmp/icmpv6/igmp/igp/l2tp/ospfigp/pim/tcp/udp/unspecified
+
+stateful: no
+
+log: log
+
+contract_type_epg_1: consumer
+
+contract_type_epg_2: provider

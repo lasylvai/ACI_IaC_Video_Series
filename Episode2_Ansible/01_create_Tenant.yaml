@@ -1,6 +1,6 @@
 ---
 
-- name: Build basic ACI tenant
+- name: Build basic ACI Tenant
   hosts: apic
   connection: "{{ ansible_connection }}"
   gather_facts: no
